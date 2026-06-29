@@ -4,6 +4,14 @@
 name: CI
 
 on:
+  workflow_dispatch:
+    inputs:
+      release_build:
+        description: 'Specifies if this should build release artifacts without commit hash in hex file names'
+        default: false
+        required: false
+        type: boolean
+
   workflow_call:
     inputs:
       release_build:
