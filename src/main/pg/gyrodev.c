@@ -39,6 +39,10 @@
 #define GYRO_1_CS_PIN NONE
 #endif
 
+#ifndef GYRO_1_ACC_CS_PIN
+#define GYRO_1_ACC_CS_PIN NONE
+#endif
+
 #ifndef GYRO_1_EXTI_PIN
 #define GYRO_1_EXTI_PIN NONE
 #endif
@@ -49,6 +53,10 @@
 
 #ifndef GYRO_2_CS_PIN
 #define GYRO_2_CS_PIN NONE
+#endif
+
+#ifndef GYRO_2_ACC_CS_PIN
+#define GYRO_2_ACC_CS_PIN NONE
 #endif
 
 #ifndef GYRO_2_EXTI_PIN
@@ -63,6 +71,10 @@
 #define GYRO_3_CS_PIN NONE
 #endif
 
+#ifndef GYRO_3_ACC_CS_PIN
+#define GYRO_3_ACC_CS_PIN NONE
+#endif
+
 #ifndef GYRO_3_EXTI_PIN
 #define GYRO_3_EXTI_PIN NONE
 #endif
@@ -73,6 +85,10 @@
 
 #ifndef GYRO_4_CS_PIN
 #define GYRO_4_CS_PIN NONE
+#endif
+
+#ifndef GYRO_4_ACC_CS_PIN
+#define GYRO_4_ACC_CS_PIN NONE
 #endif
 
 #ifndef GYRO_4_EXTI_PIN
@@ -217,11 +233,12 @@ STATIC_ASSERT(GYRO_4_ALIGN == ALIGN_CUSTOM, "GYRO_4_ALIGN and GYRO_4_CUSTOM_ALIG
 #endif // GYRO_4_CUSTOM_ALIGN
 
 #if defined(USE_SPI_GYRO) && (defined(GYRO_1_SPI_INSTANCE) || defined(GYRO_2_SPI_INSTANCE))
-static void gyroResetSpiDeviceConfig(gyroDeviceConfig_t *devconf, spiResource_t *instance, ioTag_t csnTag, ioTag_t extiTag, ioTag_t clkInTag, uint8_t alignment, sensorAlignment_t customAlignment)
+static void gyroResetSpiDeviceConfig(gyroDeviceConfig_t *devconf, spiResource_t *instance, ioTag_t csnTag, ioTag_t accCsnTag, ioTag_t extiTag, ioTag_t clkInTag, uint8_t alignment, sensorAlignment_t customAlignment)
 {
     devconf->busType = BUS_TYPE_SPI;
     devconf->spiBus = SPI_DEV_TO_CFG(spiDeviceByInstance(instance));
     devconf->csnTag = csnTag;
+    devconf->accCsnTag = accCsnTag;
     devconf->extiTag = extiTag;
     devconf->alignment = alignment;
     devconf->customAlignment = customAlignment;
@@ -233,6 +250,7 @@ static void gyroResetSpiDeviceConfig(gyroDeviceConfig_t *devconf, spiResource_t 
 static void gyroResetI2cDeviceConfig(gyroDeviceConfig_t *devconf, i2cDevice_e i2cbus, ioTag_t extiTag, uint8_t alignment, sensorAlignment_t customAlignment)
 {
     devconf->busType = BUS_TYPE_I2C;
+    devconf->accCsnTag = IO_TAG_NONE;
     devconf->i2cBus = I2C_DEV_TO_CFG(i2cbus);
     devconf->i2cAddress = GYRO_I2C_ADDRESS;
     devconf->extiTag = extiTag;
@@ -241,7 +259,7 @@ static void gyroResetI2cDeviceConfig(gyroDeviceConfig_t *devconf, i2cDevice_e i2
 }
 #endif
 
-PG_REGISTER_ARRAY_WITH_RESET_FN(gyroDeviceConfig_t, MAX_GYRODEV_COUNT, gyroDeviceConfig, PG_GYRO_DEVICE_CONFIG, 1);
+PG_REGISTER_ARRAY_WITH_RESET_FN(gyroDeviceConfig_t, MAX_GYRODEV_COUNT, gyroDeviceConfig, PG_GYRO_DEVICE_CONFIG, 2);
 
 void pgResetFn_gyroDeviceConfig(gyroDeviceConfig_t *devconf)
 {
@@ -251,7 +269,7 @@ void pgResetFn_gyroDeviceConfig(gyroDeviceConfig_t *devconf)
 
 #define GYRO_RESET(index, num) \
     gyroResetSpiDeviceConfig(&devconf[index], (spiResource_t *)GYRO_##num##_SPI_INSTANCE, \
-        IO_TAG(GYRO_##num##_CS_PIN), IO_TAG(GYRO_##num##_EXTI_PIN), \
+        IO_TAG(GYRO_##num##_CS_PIN), IO_TAG(GYRO_##num##_ACC_CS_PIN), IO_TAG(GYRO_##num##_EXTI_PIN), \
         IO_TAG(GYRO_##num##_CLKIN_PIN), GYRO_##num##_ALIGN, GYRO_##num##_CUSTOM_ALIGN)
 
 #ifdef GYRO_1_SPI_INSTANCE

@@ -59,6 +59,7 @@ typedef enum {
     GYRO_ICM42688P,
     GYRO_BMI160,
     GYRO_BMI270,
+    GYRO_BMI088,
     GYRO_LSM6DSO,
     GYRO_LSM6DSV16X,
     GYRO_IIM42653,
@@ -86,6 +87,7 @@ typedef enum {
 typedef enum {
     GYRO_RATE_1_kHz,
     GYRO_RATE_1100_Hz,
+    GYRO_RATE_2_kHz,
     GYRO_RATE_3200_Hz,
     GYRO_RATE_6400_Hz,
     GYRO_RATE_6664_Hz,
@@ -110,6 +112,7 @@ typedef struct gyroDev_s {
     sensorGyroReadDataFuncPtr temperatureFn;                  // read temperature if available
     extiCallbackRec_t exti;
     extDevice_t dev;
+    extDevice_t accDev;
     float scale;                                             // scalefactor
     float gyroZero[XYZ_AXIS_COUNT];
     vector3_t gyroADC;                                       // gyro data after calibration and alignment

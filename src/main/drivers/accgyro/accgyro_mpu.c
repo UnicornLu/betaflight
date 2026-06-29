@@ -47,6 +47,7 @@
 #include "drivers/accgyro/accgyro_mpu6500.h"
 #include "drivers/accgyro/accgyro_spi_bmi160.h"
 #include "drivers/accgyro/accgyro_spi_bmi270.h"
+#include "drivers/accgyro/accgyro_spi_bmi088.h"
 #include "drivers/accgyro/accgyro_spi_icm20649.h"
 #include "drivers/accgyro/accgyro_spi_icm20689.h"
 #include "drivers/accgyro/accgyro_spi_icm426xx.h"
@@ -379,6 +380,9 @@ static gyroSpiDetectFn_t gyroSpiDetectFnTable[] = {
 #ifdef USE_ACCGYRO_BMI270
     bmi270Detect,
 #endif
+#ifdef USE_ACCGYRO_BMI088
+    bmi088Detect,
+#endif
 #if defined(USE_GYRO_SPI_ICM42605) || defined(USE_ACCGYRO_ICM42622P) || defined(USE_ACCGYRO_ICM42686P) || defined(USE_GYRO_SPI_ICM42688P) || defined(USE_ACCGYRO_IIM42653)
     icm426xxSpiDetect,
 #endif
@@ -404,10 +408,19 @@ static bool detectSPISensorsAndUpdateDetectionResult(gyroDev_t *gyro, const gyro
     }
 
     gyro->dev.busType_u.spi.csnPin = IOGetByTag(config->csnTag);
+    gyro->accDev.bus = NULL;
 
     IOInit(gyro->dev.busType_u.spi.csnPin, OWNER_GYRO_CS, RESOURCE_INDEX(config->index));
     IOConfigGPIO(gyro->dev.busType_u.spi.csnPin, SPI_IO_CS_CFG);
     IOHi(gyro->dev.busType_u.spi.csnPin); // Ensure device is disabled, important when two devices are on the same bus.
+
+    if (config->accCsnTag && spiSetBusInstance(&gyro->accDev, config->spiBus)) {
+        gyro->accDev.busType_u.spi.csnPin = IOGetByTag(config->accCsnTag);
+
+        IOInit(gyro->accDev.busType_u.spi.csnPin, OWNER_SPI_CS, RESOURCE_INDEX(config->index));
+        IOConfigGPIO(gyro->accDev.busType_u.spi.csnPin, SPI_IO_CS_CFG);
+        IOHi(gyro->accDev.busType_u.spi.csnPin);
+    }
 
     // Allow 100ms before attempting to access gyro's SPI bus
     // Do this once here rather than in each detection routine to speed boot
@@ -415,6 +428,9 @@ static bool detectSPISensorsAndUpdateDetectionResult(gyroDev_t *gyro, const gyro
 
     // Set a slow SPI clock that all potential devices can handle during gyro detection
     spiSetClkDivisor(&gyro->dev, spiCalculateDivider(MPU_MAX_SPI_DETECT_CLK_HZ));
+    if (gyro->accDev.bus) {
+        spiSetClkDivisor(&gyro->accDev, spiCalculateDivider(MPU_MAX_SPI_DETECT_CLK_HZ));
+    }
 
     // It is hard to use hardware to optimize the detection loop here,
     // as hardware type and detection function name doesn't match.
@@ -431,6 +447,9 @@ static bool detectSPISensorsAndUpdateDetectionResult(gyroDev_t *gyro, const gyro
 
     // Detection failed, disable CS pin again
     ioPreinitByIO(gyro->dev.busType_u.spi.csnPin, IOCFG_IPU, PREINIT_PIN_STATE_HIGH);
+    if (gyro->accDev.bus) {
+        ioPreinitByIO(gyro->accDev.busType_u.spi.csnPin, IOCFG_IPU, PREINIT_PIN_STATE_HIGH);
+    }
     return false;
 }
 #endif
@@ -439,6 +458,7 @@ void mpuPreInit(const struct gyroDeviceConfig_s *config)
 {
 #ifdef USE_SPI_GYRO
     ioPreinitByTag(config->csnTag, IOCFG_IPU, PREINIT_PIN_STATE_HIGH);
+    ioPreinitByTag(config->accCsnTag, IOCFG_IPU, PREINIT_PIN_STATE_HIGH);
 #else
     UNUSED(config);
 #endif

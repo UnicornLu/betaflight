@@ -310,6 +310,7 @@ COMMON_SRC += \
             drivers/accgyro/accgyro_mpu.c \
             drivers/accgyro/accgyro_spi_bmi160.c \
             drivers/accgyro/accgyro_spi_bmi270.c \
+            drivers/accgyro/accgyro_spi_bmi088.c \
             drivers/accgyro/accgyro_spi_icm20649.c \
             drivers/accgyro/accgyro_spi_icm20689.c \
             drivers/accgyro/accgyro_spi_icm426xx.c \
@@ -428,6 +429,7 @@ SPEED_OPTIMISED_SRC += \
             drivers/accgyro/accgyro_mpu.c \
             drivers/accgyro/accgyro_spi_bmi160.c \
             drivers/accgyro/accgyro_spi_bmi270.c \
+            drivers/accgyro/accgyro_spi_bmi088.c \
             drivers/accgyro/accgyro_spi_lsm6dso.c
 
 endif

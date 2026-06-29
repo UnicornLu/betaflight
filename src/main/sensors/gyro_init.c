@@ -43,6 +43,7 @@
 
 #include "drivers/accgyro/accgyro_spi_bmi160.h"
 #include "drivers/accgyro/accgyro_spi_bmi270.h"
+#include "drivers/accgyro/accgyro_spi_bmi088.h"
 
 #include "drivers/accgyro/accgyro_spi_icm20649.h"
 #include "drivers/accgyro/accgyro_spi_icm20689.h"
@@ -310,6 +311,7 @@ void gyroInitSensor(gyroSensor_t *gyroSensor, const gyroDeviceConfig_t *config)
     case GYRO_L3GD20:
     case GYRO_BMI160:
     case GYRO_BMI270:
+    case GYRO_BMI088:
     case GYRO_MPU6000:
     case GYRO_MPU6500:
     case GYRO_MPU9250:
@@ -505,6 +507,15 @@ STATIC_UNIT_TESTED gyroHardware_e gyroDetect(gyroDev_t *dev)
     case GYRO_BMI270:
         if (bmi270SpiGyroDetect(dev)) {
             gyroHardware = GYRO_BMI270;
+            break;
+        }
+        FALLTHROUGH;
+#endif
+
+#ifdef USE_ACCGYRO_BMI088
+    case GYRO_BMI088:
+        if (bmi088SpiGyroDetect(dev)) {
+            gyroHardware = GYRO_BMI088;
             break;
         }
         FALLTHROUGH;
